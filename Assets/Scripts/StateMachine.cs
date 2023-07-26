@@ -7,7 +7,6 @@ public abstract class StateMachine : MonoBehaviour
     protected State state;
     protected Transform target;
 
-    // 활성화(처음 생성 or 오브젝트풀에서 다시 반환되어 나올때)
     protected virtual void Start()
     {
         state = State.IDLE;
