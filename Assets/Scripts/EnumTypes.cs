@@ -7,4 +7,11 @@ public static class EnumTypes
         ATK, 
         DEAD
     }
+
+    public enum AttackPattern
+    {
+        BASIC,
+        RANGEATTACK,
+        HEAL
+    }
 }
