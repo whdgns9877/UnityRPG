@@ -5,24 +5,34 @@ using static EnumTypes;
 public class MonsterController : StateMachine
 {
     [SerializeField] MonsterData myStatus;
+
+    private PlayerController player;
     private Animator myAnim;
     private WaitForSeconds attackRate;
+    [SerializeField] private bool isAttacking;
+
+    private float curHp;
 
     private void OnEnable()
     {
-        target = GameObject.FindGameObjectWithTag("Player").transform;
-        attackRate = new WaitForSeconds(1 / myStatus.AttackRate); // AttackRate가 높아질수록 공격 속도가 빨라짐
-        myAnim = GetComponent<Animator>();
+        curHp = myStatus.MaxHp;
+        isAttacking = false;
+        Global.Inst.AddTarget(transform);
     }
 
     protected override void Start()
     {
+        target = GameObject.FindGameObjectWithTag("Player").transform;
+        player = target.GetComponent<PlayerController>();
+        attackRate = new WaitForSeconds(1 / myStatus.AttackRate); // AttackRate가 높아질수록 공격 속도가 빨라짐
+        myAnim = GetComponent<Animator>();
         base.Start();
     }
 
     protected override IEnumerator State_IDLE()
     {
         // 다음 State를 이동으로 바꾼다.
+        myAnim.ResetTrigger("Move");
         TransferState(State.MOVE);
         // TransferState 함수에서 이전 스테이트를 자동으로 Stop해주니 break가 아닌 null반환
         yield return null;
@@ -30,6 +40,7 @@ public class MonsterController : StateMachine
 
     protected override IEnumerator State_MOVE()
     {
+        myAnim.SetTrigger("Move");
         while (state == State.MOVE)
         {
             // 이동한다
@@ -58,9 +69,13 @@ public class MonsterController : StateMachine
             // 범위밖이면 Move State로 이동
             else
             {
+                myAnim.ResetTrigger("Attack");
                 TransferState(State.MOVE);
             }
 
+            yield return new WaitUntil(() => isAttacking == false);
+            myAnim.ResetTrigger("Attack");
+            myAnim.SetTrigger("Idle");
             // 공격 속도 만큼 대기
             yield return attackRate;
         }
@@ -74,14 +89,15 @@ public class MonsterController : StateMachine
 
     protected override void Attack()
     {
-        Debug.Log("공격");
+        Debug.Log("몬스터의 공격...");
         myAnim.SetTrigger("Attack");
+        isAttacking = true;
     }
 
     protected override void Dead()
     {
-        Debug.Log("사망");
         myAnim.SetTrigger("Dead");
+        Global.Inst.RemoveTarget(transform);
     }
 
     protected override void Move()
@@ -92,8 +108,6 @@ public class MonsterController : StateMachine
             target = GameObject.FindGameObjectWithTag("Player").transform;
             return;
         }
-        Debug.Log("이동");
-
 
         // 현재 위치에서 목표 타겟을 바라보는 회전값 계산
         Quaternion targetRotation = Quaternion.LookRotation(target.position - transform.position, Vector3.up);
@@ -105,8 +119,28 @@ public class MonsterController : StateMachine
 
         // 몬스터를 바라보는 방향으로 움직인다
         gameObject.transform.Translate(Vector3.forward * Time.deltaTime, Space.Self);
-        myAnim.SetTrigger("Walk");
     }
 
     private bool IsTargetValidRange() => Vector3.Distance(gameObject.transform.position, target.transform.position) < myStatus.AttackRange;
+
+    private void OnDisable()
+    {
+        Global.Inst.RemoveTarget(transform);
+    }
+
+    public void AttackEnd() => isAttacking = false;
+
+    public void TransferDamage(int attackPower)
+    {
+        curHp -= attackPower;
+        if (curHp <= 0)
+        {
+            TransferState(State.DEAD);
+        }
+    }
+
+    public void OnAttack1Trigger()
+    {
+        player.TransferDamage(myStatus.AttackPower);
+    }
 }
