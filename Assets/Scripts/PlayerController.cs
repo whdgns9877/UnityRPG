@@ -11,15 +11,18 @@ public class PlayerController : StateMachine
     private WaitForSeconds attackRate;
     private float curHp;
     private bool isAttacking;
+    private bool isRotateDone;
 
-    protected override void Start()
+    protected override void OnEnable()
     {
         isAttacking = false;
         curHp = myStatus.Hp;
         attackRate = new WaitForSeconds(1 / myStatus.AttackRate);
         myAnim = GetComponent<Animator>();
         curAttackPattern = AttackPattern.BASIC;
-        base.Start();
+        // 0.5초 주기로 타겟을 업데이트한다
+        InvokeRepeating(nameof(UpdateTarget), 0f, 0.5f);
+        base.OnEnable();
     }
 
     protected override IEnumerator State_IDLE()
@@ -27,7 +30,6 @@ public class PlayerController : StateMachine
         while (state == State.IDLE)
         {
             myAnim.SetTrigger("Idle");
-            UpdateTarget();
             if (target != null)
             {
                 TransferState(State.MOVE);
@@ -47,13 +49,17 @@ public class PlayerController : StateMachine
                 yield break;
             }
 
-            UpdateTarget();
             Move();
 
             if (IsTargetValidRange())
             {
                 myAnim.ResetTrigger("Move");
                 TransferState(State.ATK);
+            }
+            else if (target == null)
+            {
+                myAnim.ResetTrigger("Move");
+                TransferState(State.IDLE);
             }
 
             yield return null;
@@ -64,7 +70,17 @@ public class PlayerController : StateMachine
     {
         while (state == State.ATK)
         {
-            UpdateTarget();
+            // 타겟 방향을 확인하여 우선적으로 적을 향해 회전
+            Quaternion targetRotation = Quaternion.LookRotation(target.position - transform.position, Vector3.up);
+            if (Quaternion.Angle(transform.rotation, targetRotation) > 5f)
+            {
+                // 타겟 방향을 향해 부드럽게 회전
+                while (Quaternion.Angle(transform.rotation, targetRotation) > 5f)
+                {
+                    transform.rotation = Quaternion.Lerp(transform.rotation, targetRotation, 10f * Time.deltaTime);
+                    yield return null;
+                }
+            }
 
             if (IsTargetValidRange())
             {
@@ -98,23 +114,22 @@ public class PlayerController : StateMachine
             case AttackPattern.BASIC:
                 myAnim.ResetTrigger("SkillAttack");
                 myAnim.SetTrigger("BasicAttack");
-                curAttackPattern = AttackPattern.RANGEATTACK;
                 break;
 
             case AttackPattern.RANGEATTACK:
                 myAnim.ResetTrigger("BasicAttack");
                 myAnim.SetTrigger("SkillAttack");
-                curAttackPattern = AttackPattern.HEAL;
                 break;
 
             case AttackPattern.HEAL:
                 myAnim.ResetTrigger("SkillAttack");
                 myAnim.SetTrigger("BasicAttack");
-                curAttackPattern = AttackPattern.BASIC;
                 break;
         }
     }
 
+
+    // 플레이어가 죽지않으니 사용되지는 않는다...
     protected override void Dead()
     {
         myAnim.SetTrigger("Dead");
@@ -122,13 +137,24 @@ public class PlayerController : StateMachine
 
     protected override void Move()
     {
-        Quaternion targetRotation = Quaternion.LookRotation(target.position - transform.position, Vector3.up);
-        transform.rotation = Quaternion.Lerp(transform.rotation, targetRotation, 10f * Time.deltaTime);
-        gameObject.transform.Translate(Vector3.forward * Time.deltaTime, Space.Self);
-        myAnim.SetTrigger("Move");
+        if (target != null)
+        {
+            Quaternion targetRotation = Quaternion.LookRotation(target.position - transform.position, Vector3.up);
+            transform.rotation = Quaternion.Lerp(transform.rotation, targetRotation, 10f * Time.deltaTime);
+            gameObject.transform.Translate(Vector3.forward * Time.deltaTime, Space.Self);
+            myAnim.SetTrigger("Move");
+        }
+        else
+        {
+            TransferState(State.IDLE);
+        }
     }
 
-    private bool IsTargetValidRange() => Vector3.Distance(transform.position, target.position) < myStatus.AttackRange;
+    private bool IsTargetValidRange()
+    {
+        if (target == null) return false;
+        return Vector3.Distance(transform.position, target.position) < myStatus.AttackRange;
+    }
 
     private void UpdateTarget() => target = FindNearestTarget();
 
@@ -136,20 +162,23 @@ public class PlayerController : StateMachine
     {
         if (Global.Inst.targets.Count == 0)
         {
-            Debug.LogError("타겟이 존재하지 않습니다.");
             return null;
         }
 
         Transform nearestTarget = null;
         float nearestDistance = Mathf.Infinity;
 
-        foreach (Transform t in Global.Inst.targets)
+        foreach (GameObject t in Global.Inst.targets)
         {
-            float distance = Vector3.Distance(transform.position, t.position);
-            if (distance < nearestDistance)
+            MonsterController monster = t.GetComponent<MonsterController>();
+            if (monster != null && monster.CurHP > 0)
             {
-                nearestDistance = distance;
-                nearestTarget = t;
+                float distance = Vector3.Distance(transform.position, t.transform.position);
+                if (distance < nearestDistance)
+                {
+                    nearestDistance = distance;
+                    nearestTarget = t.transform;
+                }
             }
         }
 
@@ -164,18 +193,18 @@ public class PlayerController : StateMachine
         {
             if (curAttackPattern == AttackPattern.BASIC)
             {
-                Debug.Log("몬스터를 공격했다...");
                 target.GetComponent<MonsterController>().TransferDamage(myStatus.AttackPower);
+                curAttackPattern = AttackPattern.RANGEATTACK;
             }
             else
             {
-                Debug.Log("힐을 한다...");
                 myStatus.Hp = Mathf.Min(myStatus.Hp + myStatus.AttackPower, 100f);
+                curAttackPattern = AttackPattern.BASIC;
             }
         }
         else
         {
-            Debug.LogError("공격 타겟을 잃었다..");
+            Debug.LogError("Lost Target");
         }
     }
 
@@ -193,6 +222,7 @@ public class PlayerController : StateMachine
                 }
             }
         }
+        curAttackPattern = AttackPattern.HEAL;
     }
 
     public void TransferDamage(int attackPower)
@@ -200,7 +230,7 @@ public class PlayerController : StateMachine
         curHp -= attackPower;
         if (curHp <= 0)
         {
-            TransferState(State.DEAD);
+            curHp = myStatus.Hp;
         }
     }
 }

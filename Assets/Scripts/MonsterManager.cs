@@ -7,7 +7,8 @@ public class MonsterManager : MonoBehaviour
 
     private void Start()
     {
-        InvokeRepeating(nameof(SpawnMonster), 0f, monsterData.SpawnTime);
+        // 5초 이후에 SpawnTime 주기로 SpawnMonster() 호출
+        InvokeRepeating(nameof(SpawnMonster), 5f, monsterData.SpawnTime);
     }
 
     private void SpawnMonster()

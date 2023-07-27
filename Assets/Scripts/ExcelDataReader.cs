@@ -28,7 +28,7 @@ public class ExcelDataReader : MonoBehaviour
             ReadPlayerData(package.Workbook.Worksheets["PlayerDataTable"]);
         }
 
-        Debug.Log("ø¢ºø µ•¿Ã≈Õ ¿–±‚ øœ∑·");
+        Debug.Log("Success Read Data");
     }
 
     private void ReadMonsterData(ExcelWorksheet worksheet)

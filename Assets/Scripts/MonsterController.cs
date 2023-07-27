@@ -9,24 +9,22 @@ public class MonsterController : StateMachine
     private PlayerController player;
     private Animator myAnim;
     private WaitForSeconds attackRate;
-    [SerializeField] private bool isAttacking;
+    private bool isAttacking;
+    private bool isDeadAnimDone;
 
     private float curHp;
+    public float CurHP { get { return curHp; } private set { } }
 
-    private void OnEnable()
+    protected override void OnEnable()
     {
-        curHp = myStatus.MaxHp;
-        isAttacking = false;
-        Global.Inst.AddTarget(transform);
-    }
-
-    protected override void Start()
-    {
-        target = GameObject.FindGameObjectWithTag("Player").transform;
-        player = target.GetComponent<PlayerController>();
         attackRate = new WaitForSeconds(1 / myStatus.AttackRate); // AttackRate가 높아질수록 공격 속도가 빨라짐
         myAnim = GetComponent<Animator>();
-        base.Start();
+        target = GameObject.FindGameObjectWithTag("Player").transform;
+        Global.Inst.AddTarget(gameObject);
+        curHp = myStatus.MaxHp;
+        isAttacking = false;
+        player = target.GetComponent<PlayerController>();
+        base.OnEnable();
     }
 
     protected override IEnumerator State_IDLE()
@@ -84,12 +82,12 @@ public class MonsterController : StateMachine
     protected override IEnumerator State_DEAD()
     {
         Dead();
-        yield return null;
+        yield return new WaitUntil(() => isDeadAnimDone == true);
+        ObjectPool.Inst.ReturnMonsterToPool(gameObject);
     }
 
     protected override void Attack()
     {
-        Debug.Log("몬스터의 공격...");
         myAnim.SetTrigger("Attack");
         isAttacking = true;
     }
@@ -97,7 +95,8 @@ public class MonsterController : StateMachine
     protected override void Dead()
     {
         myAnim.SetTrigger("Dead");
-        Global.Inst.RemoveTarget(transform);
+        isDeadAnimDone = false;
+        Global.Inst.RemoveTarget(gameObject);
     }
 
     protected override void Move()
@@ -121,11 +120,15 @@ public class MonsterController : StateMachine
         gameObject.transform.Translate(Vector3.forward * Time.deltaTime, Space.Self);
     }
 
-    private bool IsTargetValidRange() => Vector3.Distance(gameObject.transform.position, target.transform.position) < myStatus.AttackRange;
+    private bool IsTargetValidRange()
+    {
+        if (target == null) return false;
+        return Vector3.Distance(transform.position, target.position) < myStatus.AttackRange;
+    }
 
     private void OnDisable()
     {
-        Global.Inst.RemoveTarget(transform);
+        Global.Inst.RemoveTarget(gameObject);
     }
 
     public void AttackEnd() => isAttacking = false;
@@ -142,5 +145,10 @@ public class MonsterController : StateMachine
     public void OnAttack1Trigger()
     {
         player.TransferDamage(myStatus.AttackPower);
+    }
+
+    public void EndDeadAnim()
+    {
+        isDeadAnimDone = true;
     }
 }

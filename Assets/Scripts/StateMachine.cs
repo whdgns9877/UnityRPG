@@ -6,8 +6,8 @@ public abstract class StateMachine : MonoBehaviour
 {
     protected State state;
     protected Transform target;
-
-    protected virtual void Start()
+    
+    protected virtual void OnEnable()
     {
         state = State.IDLE;
         StartCoroutine("State_" + state);
