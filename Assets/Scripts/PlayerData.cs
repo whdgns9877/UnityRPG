@@ -13,4 +13,5 @@ public class PlayerData : ScriptableObject
     public float AttackRate = 1f;
     public float AttackRange = 1f;
     public float SkillAttackRange = 2f;
+    public int RequireEXP4LvUp = 100;
 }

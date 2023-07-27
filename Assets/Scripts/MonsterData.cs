@@ -16,4 +16,5 @@ public class MonsterData : ScriptableObject
     public int AttackPower = 10;
     public float AttackRate = 1f;
     public float AttackRange = 1f;
+    public int GetExp = 10;
 }

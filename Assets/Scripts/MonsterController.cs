@@ -11,20 +11,40 @@ public class MonsterController : StateMachine
     private WaitForSeconds attackRate;
     private bool isAttacking;
     private bool isDeadAnimDone;
+    private bool initDone = false;
 
     private float curHp;
     public float CurHP { get { return curHp; } private set { } }
 
-    protected override void OnEnable()
+    private void OnEnable()
+    {
+        ActiveInit();
+    }
+
+    protected override void Start()
+    {
+        InitOnce();
+        base.Start();
+    }
+
+    private void ActiveInit()
+    {
+        Global.Instacne.AddTarget(gameObject);
+        curHp = myStatus.MaxHp;
+        isAttacking = false;
+        if(true == initDone)
+        {
+            InitState();
+        }
+    }
+
+    private void InitOnce()
     {
         attackRate = new WaitForSeconds(1 / myStatus.AttackRate); // AttackRate가 높아질수록 공격 속도가 빨라짐
         myAnim = GetComponent<Animator>();
         target = GameObject.FindGameObjectWithTag("Player").transform;
-        Global.Inst.AddTarget(gameObject);
-        curHp = myStatus.MaxHp;
-        isAttacking = false;
         player = target.GetComponent<PlayerController>();
-        base.OnEnable();
+        initDone = true;
     }
 
     protected override IEnumerator State_IDLE()
@@ -83,7 +103,7 @@ public class MonsterController : StateMachine
     {
         Dead();
         yield return new WaitUntil(() => isDeadAnimDone == true);
-        ObjectPool.Inst.ReturnMonsterToPool(gameObject);
+        ObjectPool.Instacne.ReturnMonsterToPool(gameObject);
     }
 
     protected override void Attack()
@@ -96,7 +116,8 @@ public class MonsterController : StateMachine
     {
         myAnim.SetTrigger("Dead");
         isDeadAnimDone = false;
-        Global.Inst.RemoveTarget(gameObject);
+        player.GetExp(myStatus.GetExp);
+        Global.Instacne.RemoveTarget(gameObject);
     }
 
     protected override void Move()
@@ -115,7 +136,6 @@ public class MonsterController : StateMachine
         // rotationSpeed 변수를 이용하여 보간 속도 조절 가능
         transform.rotation = Quaternion.Lerp(transform.rotation, targetRotation, 10f * Time.deltaTime);
 
-
         // 몬스터를 바라보는 방향으로 움직인다
         gameObject.transform.Translate(Vector3.forward * Time.deltaTime, Space.Self);
     }
@@ -128,7 +148,7 @@ public class MonsterController : StateMachine
 
     private void OnDisable()
     {
-        Global.Inst.RemoveTarget(gameObject);
+        Global.Instacne.RemoveTarget(gameObject);
     }
 
     public void AttackEnd() => isAttacking = false;
@@ -136,6 +156,7 @@ public class MonsterController : StateMachine
     public void TransferDamage(int attackPower)
     {
         curHp -= attackPower;
+        UIManager.Instacne.ShowDamageText(attackPower, transform.position + Vector3.up * 0.5f, Color.blue);
         if (curHp <= 0)
         {
             TransferState(State.DEAD);

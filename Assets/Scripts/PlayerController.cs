@@ -2,27 +2,66 @@ using static EnumTypes;
 using UnityEngine;
 using System.Collections;
 
+public struct PlayerStatus
+{
+    public float Hp;
+    public int AttackPower;
+    public float AttackRate;
+    public float AttackRange;
+    public float SkillAttackRange;
+    public int RequireEXP4LvUp;
+}
+
 public class PlayerController : StateMachine
 {
     [SerializeField] PlayerData myStatus;
-
+    [SerializeField] private PlayerStatus status;
+    [SerializeField] private GameObject healEff;
+    [SerializeField] private GameObject skillEff;
+    [SerializeField] private GameObject hitEff;
     private AttackPattern curAttackPattern;
     private Animator myAnim;
     private WaitForSeconds attackRate;
     private float curHp;
+    private float curExp;
     private bool isAttacking;
     private bool isRotateDone;
+    private int curLevel;
+    private int monsterLayerMask;
 
-    protected override void OnEnable()
+    protected override void Start()
     {
-        isAttacking = false;
-        curHp = myStatus.Hp;
-        attackRate = new WaitForSeconds(1 / myStatus.AttackRate);
-        myAnim = GetComponent<Animator>();
-        curAttackPattern = AttackPattern.BASIC;
+        InitStatus();
+        InitPlayer();
+        UIManager.Instacne.UpdateLevel(curLevel);
         // 0.5초 주기로 타겟을 업데이트한다
         InvokeRepeating(nameof(UpdateTarget), 0f, 0.5f);
-        base.OnEnable();
+        base.Start();
+    }
+
+    private void InitStatus()
+    {
+        status.Hp = myStatus.Hp;
+        status.AttackPower = myStatus.AttackPower;
+        status.AttackRate = myStatus.AttackRate;
+        status.AttackRange = myStatus.AttackRange;
+        status.SkillAttackRange = myStatus.SkillAttackRange;
+        status.RequireEXP4LvUp = myStatus.RequireEXP4LvUp;
+    }
+
+    private void InitPlayer()
+    {
+        attackRate = new WaitForSeconds(1 / status.AttackRate);
+        myAnim = GetComponent<Animator>();
+        healEff.SetActive(false);
+        skillEff.SetActive(false);
+        hitEff.SetActive(false);
+        curAttackPattern = AttackPattern.BASIC;
+        isAttacking = false;
+        curLevel = 1;
+        curHp = status.Hp;
+        curExp = 0;
+        monsterLayerMask = 1 << LayerMask.NameToLayer("Monster"); // "Monster" 레이어에 대한 LayerMask 생성
     }
 
     protected override IEnumerator State_IDLE()
@@ -153,14 +192,14 @@ public class PlayerController : StateMachine
     private bool IsTargetValidRange()
     {
         if (target == null) return false;
-        return Vector3.Distance(transform.position, target.position) < myStatus.AttackRange;
+        return Vector3.Distance(transform.position, target.position) < status.AttackRange;
     }
 
     private void UpdateTarget() => target = FindNearestTarget();
 
     private Transform FindNearestTarget()
     {
-        if (Global.Inst.targets.Count == 0)
+        if (Global.Instacne.targets.Count == 0)
         {
             return null;
         }
@@ -168,7 +207,7 @@ public class PlayerController : StateMachine
         Transform nearestTarget = null;
         float nearestDistance = Mathf.Infinity;
 
-        foreach (GameObject t in Global.Inst.targets)
+        foreach (GameObject t in Global.Instacne.targets)
         {
             MonsterController monster = t.GetComponent<MonsterController>();
             if (monster != null && monster.CurHP > 0)
@@ -193,12 +232,15 @@ public class PlayerController : StateMachine
         {
             if (curAttackPattern == AttackPattern.BASIC)
             {
-                target.GetComponent<MonsterController>().TransferDamage(myStatus.AttackPower);
+                target.GetComponent<MonsterController>().TransferDamage(status.AttackPower);
                 curAttackPattern = AttackPattern.RANGEATTACK;
             }
             else
             {
-                myStatus.Hp = Mathf.Min(myStatus.Hp + myStatus.AttackPower, 100f);
+                StartCoroutine(ActiveEff(healEff, 2f));
+                curHp = Mathf.Min(curHp + status.AttackPower, 100f);
+                UIManager.Instacne.UpdateHPBar(curHp / status.Hp);
+                UIManager.Instacne.ShowDamageText(status.AttackPower, transform.position + Vector3.up * 1f, Color.green);
                 curAttackPattern = AttackPattern.BASIC;
             }
         }
@@ -208,18 +250,23 @@ public class PlayerController : StateMachine
         }
     }
 
+    private IEnumerator ActiveEff(GameObject eff, float time)
+    {
+        eff.SetActive(true);
+        yield return new WaitForSeconds(time);
+        eff.SetActive(false);
+    }
+
     public void OnAttack2Trigger()
     {
-        Collider[] hitColliders = Physics.OverlapSphere(transform.position, myStatus.SkillAttackRange);
+        StartCoroutine(ActiveEff(skillEff, 2f));
+        Collider[] hitColliders = Physics.OverlapSphere(transform.position, status.SkillAttackRange, monsterLayerMask);
         foreach (Collider col in hitColliders)
         {
-            if (col.CompareTag("Monster"))
+            MonsterController monster = col.GetComponent<MonsterController>();
+            if (monster != null)
             {
-                MonsterController monster = col.GetComponent<MonsterController>();
-                if (monster != null)
-                {
-                    monster.TransferDamage(myStatus.AttackPower);
-                }
+                monster.TransferDamage(status.AttackPower);
             }
         }
         curAttackPattern = AttackPattern.HEAL;
@@ -227,10 +274,38 @@ public class PlayerController : StateMachine
 
     public void TransferDamage(int attackPower)
     {
-        curHp -= attackPower;
+        if(!hitEff.activeInHierarchy)
+            StartCoroutine(ActiveEff(hitEff, 0.5f));
+        curHp = Mathf.Max(curHp - attackPower, 0f);
+        UIManager.Instacne.UpdateHPBar(curHp / status.Hp);
+        UIManager.Instacne.ShowDamageText(attackPower, transform.position + Vector3.up * 1f, Color.red);
         if (curHp <= 0)
         {
-            curHp = myStatus.Hp;
+            curHp = status.Hp;
         }
+    }
+
+    public void GetExp(int addExpAmount)
+    {
+        curExp += addExpAmount;
+        if(curExp >= status.RequireEXP4LvUp)
+        {
+            UIManager.Instacne.UpdateExpBar(curExp / status.RequireEXP4LvUp, true);
+            LevelUp();
+            curExp = 0;
+        }
+        else
+        {
+            UIManager.Instacne.UpdateExpBar(curExp / status.RequireEXP4LvUp);
+        }
+    }
+
+    public void LevelUp()
+    {
+        status.Hp += 10;
+        status.AttackPower += 10;
+        status.AttackRate += 0.2f;
+        status.RequireEXP4LvUp += 50;
+        UIManager.Instacne.UpdateLevel(++curLevel);
     }
 }

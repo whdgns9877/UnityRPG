@@ -7,7 +7,12 @@ public abstract class StateMachine : MonoBehaviour
     protected State state;
     protected Transform target;
     
-    protected virtual void OnEnable()
+    protected virtual void Start()
+    {
+        InitState();
+    }
+
+    protected void InitState()
     {
         state = State.IDLE;
         StartCoroutine("State_" + state);

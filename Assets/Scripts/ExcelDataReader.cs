@@ -45,6 +45,7 @@ public class ExcelDataReader : MonoBehaviour
             int.TryParse(worksheet.Cells[row, 4].Value?.ToString(), out int attackPower);
             float.TryParse(worksheet.Cells[row, 5].Value?.ToString(), out float attackRate);
             float.TryParse(worksheet.Cells[row, 6].Value?.ToString(), out float attackRange);
+            int.TryParse(worksheet.Cells[row, 7].Value?.ToString(), out int getExp);
 
             // 스크립터블 오브젝트의 값을 변경
             monsterData.SpawnTime = spawnTime;
@@ -53,6 +54,7 @@ public class ExcelDataReader : MonoBehaviour
             monsterData.AttackPower = attackPower;
             monsterData.AttackRate = attackRate;
             monsterData.AttackRange = attackRange;
+            monsterData.GetExp = getExp;
         }
     }
 
@@ -69,6 +71,7 @@ public class ExcelDataReader : MonoBehaviour
             int.TryParse(worksheet.Cells[row, 3].Value?.ToString(), out int attackRate);
             float.TryParse(worksheet.Cells[row, 4].Value?.ToString(), out float attackRange);
             float.TryParse(worksheet.Cells[row, 5].Value?.ToString(), out float skillAttackRange);
+            int.TryParse((worksheet.Cells[row, 6].Value)?.ToString(), out int requireExp4LvUp);
 
             // 스크립터블 오브젝트의 값을 변경
             playerData.Hp = hp;
@@ -76,6 +79,7 @@ public class ExcelDataReader : MonoBehaviour
             playerData.AttackRate = attackRate;
             playerData.AttackRange = attackRange;
             playerData.SkillAttackRange = skillAttackRange;
+            playerData.RequireEXP4LvUp = requireExp4LvUp;
         }
     }
 }
