@@ -109,15 +109,22 @@ public class PlayerController : StateMachine
     {
         while (state == State.ATK)
         {
-            // 타겟 방향을 확인하여 우선적으로 적을 향해 회전
-            Quaternion targetRotation = Quaternion.LookRotation(target.position - transform.position, Vector3.up);
-            if (Quaternion.Angle(transform.rotation, targetRotation) > 5f)
+            if(target == null)
             {
-                // 타겟 방향을 향해 부드럽게 회전
-                while (Quaternion.Angle(transform.rotation, targetRotation) > 5f)
+                TransferState(State.IDLE);
+            }
+            else
+            {
+                // 타겟 방향을 확인하여 우선적으로 적을 향해 회전
+                Quaternion targetRotation = Quaternion.LookRotation(target.position - transform.position, Vector3.up);
+                if (Quaternion.Angle(transform.rotation, targetRotation) > 5f)
                 {
-                    transform.rotation = Quaternion.Lerp(transform.rotation, targetRotation, 10f * Time.deltaTime);
-                    yield return null;
+                    // 타겟 방향을 향해 부드럽게 회전
+                    while (Quaternion.Angle(transform.rotation, targetRotation) > 5f)
+                    {
+                        transform.rotation = Quaternion.Lerp(transform.rotation, targetRotation, 10f * Time.deltaTime);
+                        yield return null;
+                    }
                 }
             }
 
@@ -275,7 +282,9 @@ public class PlayerController : StateMachine
     public void TransferDamage(int attackPower)
     {
         if(!hitEff.activeInHierarchy)
+        {
             StartCoroutine(ActiveEff(hitEff, 0.5f));
+        }
         curHp = Mathf.Max(curHp - attackPower, 0f);
         UIManager.Instacne.UpdateHPBar(curHp / status.Hp);
         UIManager.Instacne.ShowDamageText(attackPower, transform.position + Vector3.up * 1f, Color.red);
