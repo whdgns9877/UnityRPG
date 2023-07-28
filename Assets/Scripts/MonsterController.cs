@@ -32,7 +32,7 @@ public class MonsterController : StateMachine
         Global.Instacne.AddTarget(gameObject);
         curHp = myStatus.MaxHp;
         isAttacking = false;
-        if(true == initDone)
+        if (true == initDone)
         {
             InitState();
         }

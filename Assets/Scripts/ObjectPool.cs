@@ -49,7 +49,6 @@ public class ObjectPool : MonoSingleton<ObjectPool>
 
         GameObject monster = monsterPool.Dequeue();
         monster.SetActive(true);
-        Global.Instacne.AddTarget(monster);
         return monster;
     }
 

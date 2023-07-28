@@ -17,7 +17,7 @@ public class MonsterManager : MonoBehaviour
         if(true == CheckMonsterSpawnMaxCount())
         {
             GameObject monsterObj = ObjectPool.Instacne.GetMonsterFromPool();
-            monsterObj.transform.position = spawnPoints[Random.Range(0, spawnPoints.Length - 1)].position;
+            monsterObj.transform.position = spawnPoints[Random.Range(0, spawnPoints.Length)].position;
         }
     }
 
