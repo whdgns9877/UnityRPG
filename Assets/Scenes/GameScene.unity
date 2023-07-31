@@ -185,6 +185,9 @@ MonoBehaviour:
   PlayerHPBar: {fileID: 436780147}
   PlayerEXPBar: {fileID: 36435705}
   PlayerLvTxt: {fileID: 773989744}
+  DamageTxt: {fileID: 2824396948788124420, guid: f9157907a9d69c84e8ec29a590a4bde2,
+    type: 3}
+  canvas: {fileID: 453335369}
 --- !u!4 &387864568
 Transform:
   m_ObjectHideFlags: 0
@@ -813,7 +816,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5227697ab35058246a1d85fea6e3d4a0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  targets: []
+  ActiveTargets: []
 --- !u!4 &2054354105
 Transform:
   m_ObjectHideFlags: 0
@@ -879,7 +882,6 @@ MonoBehaviour:
     type: 3}
   canvas: {fileID: 453335369}
   monsterInitPoolSize: 5
-  damageTextInitPoolSize: 15
 --- !u!1001 &8774383875869145663
 PrefabInstance:
   m_ObjectHideFlags: 0

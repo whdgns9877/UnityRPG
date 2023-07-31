@@ -31,12 +31,7 @@ public class DamageText : MonoBehaviour
         if (offsetCurve.keys[offsetCurve.keys.Length - 1].time <= startTime)
         {
             startTime = 0f; // 시간초기화
-            ObjectPool.Instacne.ReturnDamageTextToPool(gameObject); // 풀에 반환
+            Destroy(gameObject);
         }
-    }
-
-    private void OnDisable()
-    {
-        transform.position = oriPos; // 위치 초기화
     }
 }

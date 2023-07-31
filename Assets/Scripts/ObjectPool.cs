@@ -5,13 +5,10 @@ public class ObjectPool : MonoSingleton<ObjectPool>
 {
     [SerializeField] private GameObject monsterPrefab;     // 거미 몬스터 프리팹
     [SerializeField] private GameObject damageTextPrefab;  // 데미지 텍스트 프리팹
-    [SerializeField] private Canvas canvas = null;         // 데미지 텍스트를 품을 캔버스
     [SerializeField] private int monsterInitPoolSize;      // 초기 몬스터풀 생성개수
-    [SerializeField] private int damageTextInitPoolSize;   // 초기 데미지 텍스트풀 생성개수
     
     // 오브젝트풀을 큐 자료구조로 만든다
-    private Queue<GameObject> monsterPool; 
-    private Queue<GameObject> damageTextPool;              
+    private Queue<GameObject> monsterPool;           
 
     private void Start()
     {
@@ -25,15 +22,6 @@ public class ObjectPool : MonoSingleton<ObjectPool>
             monster.transform.position = Vector3.one * 100;
             monster.SetActive(false);
             monsterPool.Enqueue(monster);
-        }
-
-        // DamageText 오브젝트 풀 초기화
-        damageTextPool = new Queue<GameObject>();
-        for (int i = 0; i < damageTextInitPoolSize; i++)
-        {
-            GameObject damageText = Instantiate(damageTextPrefab, canvas.transform);
-            damageText.SetActive(false);
-            damageTextPool.Enqueue(damageText);
         }
     }
 
@@ -61,26 +49,5 @@ public class ObjectPool : MonoSingleton<ObjectPool>
         Global.Instacne.RemoveTarget(monster);
         monster.SetActive(false);
         monsterPool.Enqueue(monster);
-    }
-
-    public GameObject GetDamageTextFromPool()
-    {
-        if (damageTextPool.Count == 0)
-        {
-            // 풀이 비어있으면 새로운 오브젝트 생성
-            GameObject newDamageText = Instantiate(damageTextPrefab, canvas.transform);
-            newDamageText.SetActive(false);
-            return newDamageText;
-        }
-
-        GameObject damageText = damageTextPool.Dequeue();
-        damageText.SetActive(true);
-        return damageText;
-    }
-
-    public void ReturnDamageTextToPool(GameObject damageText)
-    {
-        damageText.SetActive(false);
-        damageTextPool.Enqueue(damageText);
     }
 }

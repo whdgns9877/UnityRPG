@@ -8,10 +8,15 @@ public class ExcelDataReader : MonoBehaviour
     [SerializeField] private PlayerData playerData;
 
     // ø¢ºø ∆ƒ¿œ¿« ∞Ê∑Œ
-    private string excelFilePath = "Assets/Resources/DataTable.xlsx";
+    private string excelFilePath;// = "Assets/Resources/DataTable.xlsx";
 
     private void Start()
     {
+#if UNITY_EDITOR
+        excelFilePath = "Assets/Resources/DataTable.xlsx";
+#else
+        excelFilePath = Resources.Load<TextAsset>("DataTable").text;
+#endif
         // ø¢ºø ∆ƒ¿œ ¿–±‚
         ReadExcelFile();
     }

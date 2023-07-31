@@ -7,6 +7,8 @@ public class UIManager : MonoSingleton<UIManager>
     [SerializeField] private Slider PlayerHPBar;     // 플레이어의 체력을 표시하는 슬라이더
     [SerializeField] private Slider PlayerEXPBar;    // 플레이어의 경험치를 표시하는 슬라이더
     [SerializeField] private TMP_Text PlayerLvTxt;   // 플레이어의 레벨을 표시하는 텍스트
+    [SerializeField] private GameObject DamageTxt;   // 데미지 텍스트 프리팹
+    [SerializeField] private Canvas canvas = null;   // 데미지 텍스트를 품을 캔버스
 
     private Camera mainCam; // 메인 카메라의 참조
 
@@ -45,7 +47,6 @@ public class UIManager : MonoSingleton<UIManager>
         PlayerLvTxt.text = $"LV {curLevel}";
     }
 
-    // 데미지 텍스트를 지정된 위치 (outputPos)에 주어진 색상으로 표시하는 메서드
     public void ShowDamageText(float damageValue, Vector3 outputPos, Color color)
     {
         // 입력된 outputPos는 3D 공간 상의 좌표이므로
@@ -55,7 +56,7 @@ public class UIManager : MonoSingleton<UIManager>
         Vector3 screenPos = mainCam.WorldToScreenPoint(outputPos);
 
         // outputPos 매개변수로 받은 위치를 카메라 기준 좌표로 받아 해당 위치에 회전 변환 없이 캔버스에 띄움
-        GameObject damageTxtObj = ObjectPool.Instacne.GetDamageTextFromPool();
+        GameObject damageTxtObj = Instantiate(DamageTxt, canvas.transform);
         damageTxtObj.transform.position = screenPos;
         damageTxtObj.transform.rotation = Quaternion.identity;
         TMP_Text instTxt = damageTxtObj.GetComponent<TMP_Text>();
