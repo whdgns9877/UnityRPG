@@ -2,8 +2,8 @@ using UnityEngine;
 
 public class MonsterManager : MonoBehaviour
 {
-    [SerializeField] private MonsterData monsterData;
-    [SerializeField] private Transform[] spawnPoints;
+    [SerializeField] private MonsterData monsterData; // 스폰 주기를 알기위해 몬스터 ScriptableObject 참조
+    [SerializeField] private Transform[] spawnPoints; // 플레이어 주변의 Transform을 배열로(플레이어 주변 생성) 
 
     private void Start()
     {
@@ -14,22 +14,16 @@ public class MonsterManager : MonoBehaviour
     private void SpawnMonster()
     {
         // 아직 최대 스폰수가 되지 않았을때만 풀에서 몬스터 꺼내옴
-        if(true == CheckMonsterSpawnMaxCount())
+        if(CheckMonsterSpawnMaxCount())
         {
             GameObject monsterObj = ObjectPool.Instacne.GetMonsterFromPool();
             monsterObj.transform.position = spawnPoints[Random.Range(0, spawnPoints.Length)].position;
         }
     }
 
+    // 몬스터가 최대로 스폰되어있는지를 판별한다
     private bool CheckMonsterSpawnMaxCount()
     {
-        if (Global.Instacne.targets.Count >= monsterData.MaxMonsterCount)
-        {
-            return false;
-        }
-        else
-        {
-            return true;
-        }
+        return Global.Instacne.ActiveTargets.Count < monsterData.MaxMonsterCount;
     }
 }

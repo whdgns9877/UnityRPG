@@ -4,18 +4,19 @@ using static EnumTypes;
 
 public class MonsterController : StateMachine
 {
-    [SerializeField] MonsterData myStatus;
+    [SerializeField] MonsterData myStatus; // 몬스터의 기본스텟 정보(Scriptable Object)
+                                            
+    private PlayerController player;       // PlayerController 인스턴스 정보를 담아두기위함
+    private Animator myAnim;               // 각 몬스터의 애니메이터 컴포넌트
+    private WaitForSeconds attackRate;     // 주기적으로 사용할 attackRate를 매번 new로 생성하지 않고 한번 생성해두고 재사용
+    private bool isAttacking;              // 공격중인지를 판별할 변수
+    private bool isDeadAnimDone;           // 죽는 애니메이션이 끝났는지를 판별할 변수
+    private bool initDone = false;         // 처음 생성단계인지 비활성화 -> 활성화 상태인지를 판별할 변수
 
-    private PlayerController player;
-    private Animator myAnim;
-    private WaitForSeconds attackRate;
-    private bool isAttacking;
-    private bool isDeadAnimDone;
-    private bool initDone = false;
+    private float curHp; // 현재 HP
+    public float CurHP { get { return curHp; } private set { } } // 현재 HP정보를 반환해주는 Property
 
-    private float curHp;
-    public float CurHP { get { return curHp; } private set { } }
-
+    // 활성화 (처음 생성되거나 비활성화(죽음) -> 활성화 시에 실행)
     private void OnEnable()
     {
         ActiveInit();
@@ -29,6 +30,7 @@ public class MonsterController : StateMachine
 
     private void ActiveInit()
     {
+        // 활성화 되어있는 타겟들을 List에 추가하기 위함
         Global.Instacne.AddTarget(gameObject);
         curHp = myStatus.MaxHp;
         isAttacking = false;
@@ -140,31 +142,40 @@ public class MonsterController : StateMachine
         gameObject.transform.Translate(Vector3.forward * Time.deltaTime, Space.Self);
     }
 
+    // 해당 타겟이 공격가능 범위 안에 있는지를 뱉어준다
     private bool IsTargetValidRange()
     {
         if (target == null) return false;
         return Vector3.Distance(transform.position, target.position) < myStatus.AttackRange;
     }
 
+    // 비활성화(죽음)되면 활성화 리스트에서 제거
     private void OnDisable()
     {
         Global.Instacne.RemoveTarget(gameObject);
     }
 
+    // 공격 모션 애니메이션에 사용하여 공격이 끝난 상태로 전환
     public void AttackEnd() => isAttacking = false;
 
+    // 플레이어에게 공격당하면 해당 함수 호출
     public void TransferDamage(int attackPower)
     {
+        // 현재 체력을 attackPower만큼 깎고
         curHp -= attackPower;
+        // UIManager에게 얼만큼의 데미지를 입었으니 표시해달라 요청(색은 푸른색으로)
         UIManager.Instacne.ShowDamageText(attackPower, transform.position + Vector3.up * 0.5f, Color.blue);
+        // 현재 체력이 0이하라면 DEAD스테이트로 이동
         if (curHp <= 0)
         {
             TransferState(State.DEAD);
         }
     }
 
+    // 몬스터의 공격애니메이션 특정 프레임에 이 함수가 호출
     public void OnAttack1Trigger()
     {
+        // 미리 얻어놓은 player인스턴스에 피격사실 알림
         player.TransferDamage(myStatus.AttackPower);
     }
 

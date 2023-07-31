@@ -3,14 +3,15 @@ using UnityEngine;
 
 public class ObjectPool : MonoSingleton<ObjectPool>
 {
-    [SerializeField] private GameObject monsterPrefab;
-    [SerializeField] private GameObject damageTextPrefab;
-    [SerializeField] private Canvas canvas = null;
-    [SerializeField] private int monsterInitPoolSize;
-    [SerializeField] private int damageTextInitPoolSize;
-
-    private Queue<GameObject> monsterPool;
-    private Queue<GameObject> damageTextPool;
+    [SerializeField] private GameObject monsterPrefab;     // 거미 몬스터 프리팹
+    [SerializeField] private GameObject damageTextPrefab;  // 데미지 텍스트 프리팹
+    [SerializeField] private Canvas canvas = null;         // 데미지 텍스트를 품을 캔버스
+    [SerializeField] private int monsterInitPoolSize;      // 초기 몬스터풀 생성개수
+    [SerializeField] private int damageTextInitPoolSize;   // 초기 데미지 텍스트풀 생성개수
+    
+    // 오브젝트풀을 큐 자료구조로 만든다
+    private Queue<GameObject> monsterPool; 
+    private Queue<GameObject> damageTextPool;              
 
     private void Start()
     {
@@ -36,6 +37,7 @@ public class ObjectPool : MonoSingleton<ObjectPool>
         }
     }
 
+    // 요청하는 측에서 몬스터풀에서 하나의 몬스터를 꺼내달라 요청
     public GameObject GetMonsterFromPool()
     {
         if (monsterPool.Count == 0)
@@ -49,9 +51,11 @@ public class ObjectPool : MonoSingleton<ObjectPool>
 
         GameObject monster = monsterPool.Dequeue();
         monster.SetActive(true);
+        // 요청한 측에 해당 큐에서 꺼낸(Deque)몬스터 반환
         return monster;
     }
 
+    // 사용이 끝난(죽은) 몬스터를 다시 풀에 집어넣는다
     public void ReturnMonsterToPool(GameObject monster)
     {
         Global.Instacne.RemoveTarget(monster);

@@ -2,6 +2,7 @@ using System.Collections;
 using UnityEngine;
 using static EnumTypes;
 
+// 플레이어와 몬스터의 기본 스테이트머신 추상화 클래스
 public abstract class StateMachine : MonoBehaviour
 {
     protected State state;
@@ -28,14 +29,15 @@ public abstract class StateMachine : MonoBehaviour
         StartCoroutine("State_" + state);
     }
 
-    protected abstract IEnumerator State_IDLE();
-    protected abstract IEnumerator State_MOVE();
-    protected abstract IEnumerator State_ATK();
-    protected abstract IEnumerator State_DEAD();
-
-    protected abstract void Attack();
-
-    protected abstract void Dead();
-
-    protected abstract void Move();
+    // abstract 함수들을 자식들이 각자 구현
+    protected abstract IEnumerator State_IDLE(); 
+    protected abstract IEnumerator State_MOVE(); 
+    protected abstract IEnumerator State_ATK();  
+    protected abstract IEnumerator State_DEAD(); 
+                                                 
+    protected abstract void Attack();            
+                                                 
+    protected abstract void Dead();              
+                                                 
+    protected abstract void Move();              
 }

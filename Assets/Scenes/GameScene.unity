@@ -129,16 +129,16 @@ Transform:
     type: 3}
   m_PrefabInstance: {fileID: 8774383875869145663}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &47811650 stripped
+--- !u!114 &36435705 stripped
 MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 5701427403134336691, guid: 895f0fcba11291f4e8d7ad2efb22e761,
+  m_CorrespondingSourceObject: {fileID: 2916800597071567108, guid: 895f0fcba11291f4e8d7ad2efb22e761,
     type: 3}
   m_PrefabInstance: {fileID: 8774383875869145663}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Script: {fileID: 11500000, guid: 67db9e8f0e2ae9c40bc1e2b64352a6b4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!4 &89725910 stripped
@@ -153,18 +153,6 @@ Transform:
     type: 3}
   m_PrefabInstance: {fileID: 8774383875869145663}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &352376138 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 2793868957077321737, guid: 895f0fcba11291f4e8d7ad2efb22e761,
-    type: 3}
-  m_PrefabInstance: {fileID: 8774383875869145663}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1 &387864566
 GameObject:
   m_ObjectHideFlags: 0
@@ -194,9 +182,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 80ef2cc7338ace64bb06b698e98f72af, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  PlayerHPBarBackGround: {fileID: 47811650}
-  PlayerHPBar: {fileID: 1244792464}
-  PlayerEXPBar: {fileID: 352376138}
+  PlayerHPBar: {fileID: 436780147}
+  PlayerEXPBar: {fileID: 36435705}
   PlayerLvTxt: {fileID: 773989744}
 --- !u!4 &387864568
 Transform:
@@ -328,6 +315,18 @@ MonoBehaviour:
   m_ShadowLayerMask: 1
   m_LightCookieSize: {x: 1, y: 1}
   m_LightCookieOffset: {x: 0, y: 0}
+--- !u!114 &436780147 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 4025871729189178096, guid: 895f0fcba11291f4e8d7ad2efb22e761,
+    type: 3}
+  m_PrefabInstance: {fileID: 8774383875869145663}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 67db9e8f0e2ae9c40bc1e2b64352a6b4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &453335366
 GameObject:
   m_ObjectHideFlags: 0
@@ -779,18 +778,6 @@ Transform:
     type: 3}
   m_PrefabInstance: {fileID: 8774383875869145663}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &1244792464 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 155877613863552976, guid: 895f0fcba11291f4e8d7ad2efb22e761,
-    type: 3}
-  m_PrefabInstance: {fileID: 8774383875869145663}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!4 &1291442668 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 1291442668, guid: 895f0fcba11291f4e8d7ad2efb22e761,
@@ -892,7 +879,7 @@ MonoBehaviour:
     type: 3}
   canvas: {fileID: 453335369}
   monsterInitPoolSize: 5
-  damageTextInitPoolSize: 10
+  damageTextInitPoolSize: 15
 --- !u!1001 &8774383875869145663
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -900,6 +887,21 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 1170554472606240612, guid: 895f0fcba11291f4e8d7ad2efb22e761,
+        type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1170554472606240612, guid: 895f0fcba11291f4e8d7ad2efb22e761,
+        type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4333045910778947438, guid: 895f0fcba11291f4e8d7ad2efb22e761,
+        type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 8774383874629703586, guid: 895f0fcba11291f4e8d7ad2efb22e761,
         type: 3}
       propertyPath: m_RootOrder

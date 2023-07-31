@@ -1,5 +1,6 @@
 using UnityEngine;
 
+// Singleton 패턴을 Generic으로
 public class MonoSingleton<T> : MonoBehaviour where T : MonoSingleton<T>
 {
     private static T _instance = null;
